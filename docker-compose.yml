@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # ======================
+  # TimescaleDB Database
+  # ======================
+  timescaledb: 
+    image: timescale/timescaledb:latest-pg16
+    container_name: smart_home_timescaledb
+    environment: 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes: 
+      - timescale_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - iot_network
+    restart: unless-stopped
+
+  # ======================
+  # Flask Backend API
+  # ======================
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smart_home_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@timescaledb:5432/${POSTGRES_DB}
+      PUBNUB_PUBLISH_KEY: ${PUBNUB_PUBLISH_KEY}
+      PUBNUB_SUBSCRIBE_KEY: ${PUBNUB_SUBSCRIBE_KEY}
+      PUBNUB_SECRET_KEY: ${PUBNUB_SECRET_KEY}
+      PUBNUB_SENSOR_CHANNEL: ${PUBNUB_SENSOR_CHANNEL}
+      PUBNUB_CONTROL_CHANNEL: ${PUBNUB_CONTROL_CHANNEL}
+      PUBNUB_ALERT_CHANNEL: ${PUBNUB_ALERT_CHANNEL}
+      FLASK_ENV: ${FLASK_ENV}
+      FLASK_DEBUG: ${FLASK_DEBUG}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      ALERT_TEMP_HIGH: ${ALERT_TEMP_HIGH}
+      ALERT_TEMP_LOW: ${ALERT_TEMP_LOW}
+      ALERT_HUMIDITY_HIGH: ${ALERT_HUMIDITY_HIGH}
+      ALERT_HUMIDITY_LOW: ${ALERT_HUMIDITY_LOW}
+      ALERT_LIGHT_LOW: ${ALERT_LIGHT_LOW}
+      LOG_LEVEL: ${LOG_LEVEL}
+    ports:
+      - "5000:5000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - backend_logs:/app/logs
+    networks:
+      - iot_network
+    restart: unless-stopped
+
+  # ======================
+  # Raspberry Pi Simulator
+  # ======================
+  raspberry-simulator:
+    build:
+      context: ./raspberry-pi
+      dockerfile: Dockerfile
+    container_name: smart_home_raspberry_sim
+    environment:
+      PUBNUB_PUBLISH_KEY:  ${PUBNUB_PUBLISH_KEY}
+      PUBNUB_SUBSCRIBE_KEY: ${PUBNUB_SUBSCRIBE_KEY}
+      PUBNUB_SENSOR_CHANNEL: ${PUBNUB_SENSOR_CHANNEL}
+      PUBNUB_CONTROL_CHANNEL: ${PUBNUB_CONTROL_CHANNEL}
+      SENSOR_READ_INTERVAL: ${SENSOR_READ_INTERVAL}
+      SIMULATION_MODE: "true"
+      GPIO_DHT22: ${GPIO_DHT22}
+      GPIO_LDR: ${GPIO_LDR}
+      GPIO_PIR: ${GPIO_PIR}
+      GPIO_LED_RED:  ${GPIO_LED_RED}
+      GPIO_LED_GREEN: ${GPIO_LED_GREEN}
+      GPIO_LED_BLUE: ${GPIO_LED_BLUE}
+      GPIO_BUZZER: ${GPIO_BUZZER}
+    depends_on:
+      - backend
+    volumes:
+      - ./raspberry-pi:/app
+      - raspberry_logs:/app/logs
+    networks:
+      - iot_network
+    restart: unless-stopped
+
+  # ======================
+  # React Frontend
+  # ======================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smart_home_frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+      REACT_APP_PUBNUB_PUBLISH_KEY: ${PUBNUB_PUBLISH_KEY}
+      REACT_APP_PUBNUB_SUBSCRIBE_KEY: ${PUBNUB_SUBSCRIBE_KEY}
+      REACT_APP_PUBNUB_CONTROL_CHANNEL: ${PUBNUB_CONTROL_CHANNEL}
+      REACT_APP_PUBNUB_SENSOR_CHANNEL: ${PUBNUB_SENSOR_CHANNEL}
+      REACT_APP_PUBNUB_ALERT_CHANNEL:  ${PUBNUB_ALERT_CHANNEL}
+    ports: 
+      - "3000:3000"
+    depends_on: 
+      - backend
+    volumes: 
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules
+    networks:
+      - iot_network
+    stdin_open: true
+    tty: true
+
+volumes:
+  timescale_data:
+  backend_logs:
+  raspberry_logs: 
+
+networks:
+  iot_network:
+    driver: bridge

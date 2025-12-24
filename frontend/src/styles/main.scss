@@ -1,0 +1,41 @@
+// ================================
+// MAIN ENTRY POINT
+// ================================
+
+// 1. Configuration and helpers
+@import 'variables';
+@import 'mixins';
+
+// 2. Base
+@import 'reset';
+@import 'typography';
+
+// 3. Layout & Components
+@import 'animations';
+@import 'utilities';
+@import 'responsive';
+
+// ================================
+// GLOBAL STYLES
+// ================================
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  line-height:  $line-height-base;
+  color: $text-color;
+  background-color: $background-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: greyscale;
+}
+
+#root {
+  min-height: 100vh;
+}

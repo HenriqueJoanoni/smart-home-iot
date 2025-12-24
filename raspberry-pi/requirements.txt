@@ -1,0 +1,13 @@
+# GPIO
+RPi.GPIO==0.7.1
+
+# Sensors
+adafruit-circuitpython-dht==4.0.0
+adafruit-mcp3008==1.0.1
+
+# Communication
+pubnub==7.4.0
+python-dotenv==1.0.0
+
+# Utilities
+python-dateutil==2.8.2
