@@ -20,7 +20,7 @@ PUBNUB_UUID = os.getenv('PUBNUB_UUID', 'raspberry-pi-main')
 # ====================================
 # SENSOR SETTINGS
 # ====================================
-SENSOR_READ_INTERVAL = int(os. getenv('SENSOR_READ_INTERVAL', '5'))  # seconds
+SENSOR_READ_INTERVAL = int(os.getenv('SENSOR_READ_INTERVAL', '5'))  # seconds
 USE_MCP3008_FOR_LDR = os.getenv('USE_MCP3008_FOR_LDR', 'true').lower() == 'true'
 
 # ====================================
@@ -33,7 +33,7 @@ DEVICE_ID = os.getenv('DEVICE_ID', 'raspberry_pi_main')
 # LOGGING
 # ====================================
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-LOG_FILE = os.getenv('LOG_FILE', 'logs/raspberry_pi. log')
+LOG_FILE = os.getenv('LOG_FILE', 'logs/raspberry_pi.log')
 
 # ====================================
 # VALIDATION

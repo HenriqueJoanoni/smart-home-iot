@@ -44,7 +44,7 @@ class GreenLEDController(BaseActuator):
         self.gpio_pin = gpio_pin
         
         if not HARDWARE_AVAILABLE or GPIO is None:
-            self. logger.warning("GPIO not available, LED will be simulated")
+            self.logger.warning("GPIO not available, LED will be simulated")
             self.is_initialised = True  # Allow simulation mode
             return
         
@@ -59,7 +59,7 @@ class GreenLEDController(BaseActuator):
             GPIO.output(self.gpio_pin, GPIO.LOW)
             
             self.is_initialised = True
-            self. logger.info(f"Green LED initialised on GPIO {self. gpio_pin}")
+            self.logger.info(f"Green LED initialised on GPIO {self.gpio_pin}")
             
         except Exception as e: 
             self.logger.error(f"Failed to initialise green LED:  {e}")
@@ -67,7 +67,7 @@ class GreenLEDController(BaseActuator):
     
     def turn_on(self):
         """Turn LED on"""
-        if not self. is_initialised:
+        if not self.is_initialised:
             self.logger.warning("LED not initialised")
             return
         
@@ -77,14 +77,14 @@ class GreenLEDController(BaseActuator):
                 self._state = 'on'
                 self.logger.debug("Green LED turned ON")
             except Exception as e:
-                self. logger.error(f"Error turning on LED: {e}")
+                self.logger.error(f"Error turning on LED: {e}")
         else:
             self._state = 'on'
-            self.logger. info("🟢 [SIMULATION] Green LED turned ON")
+            self.logger.info("🟢 [SIMULATION] Green LED turned ON")
     
     def turn_off(self):
         """Turn LED off"""
-        if not self. is_initialised:
+        if not self.is_initialised:
             self.logger.warning("LED not initialised")
             return
         
@@ -101,7 +101,7 @@ class GreenLEDController(BaseActuator):
     
     def toggle(self):
         """Toggle LED state"""
-        if self. is_on:
+        if self.is_on:
             self.turn_off()
         else:
             self.turn_on()
@@ -135,7 +135,7 @@ class GreenLEDController(BaseActuator):
         import time
         
         if not HARDWARE_AVAILABLE or GPIO is None:
-            self. logger.info(f"[SIMULATION] Pulsing LED for {duration}s at {frequency}Hz")
+            self.logger.info(f"[SIMULATION] Pulsing LED for {duration}s at {frequency}Hz")
             return
         
         interval = 1.0 / (frequency * 2)

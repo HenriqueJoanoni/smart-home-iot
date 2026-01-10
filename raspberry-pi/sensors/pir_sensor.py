@@ -99,7 +99,7 @@ class PIRSensor(BaseSensor):
         # Timing
         self.calibration_time = calibration_time
         self.debounce_time = debounce_time
-        self. motion_timeout = motion_timeout
+        self.motion_timeout = motion_timeout
         
         # Buzzer settings
         self.buzzer_frequency = buzzer_frequency
@@ -148,7 +148,7 @@ class PIRSensor(BaseSensor):
             GPIO.setwarnings(False)
             
             # Set up PIR pin as input
-            GPIO.setup(self.pir_pin, GPIO. IN)
+            GPIO.setup(self.pir_pin, GPIO.IN)
             
             # Set up Buzzer with PWM
             if self.enable_buzzer:
@@ -159,7 +159,7 @@ class PIRSensor(BaseSensor):
             
             # Set up LED
             if self.enable_led:
-                GPIO.setup(self. led_pin, GPIO.OUT)
+                GPIO.setup(self.led_pin, GPIO.OUT)
                 GPIO.output(self.led_pin, GPIO.LOW)
                 self.logger.info(f"LED initialised on GPIO {self.led_pin}")
             
@@ -168,7 +168,7 @@ class PIRSensor(BaseSensor):
             
             # Wait for PIR to calibrate
             if self.calibration_time > 0:
-                self.logger. info("⏳ PIR calibrating - please wait and avoid movement...")
+                self.logger.info("⏳ PIR calibrating - please wait and avoid movement...")
                 time.sleep(self.calibration_time)
             
             self._calibration_complete = True
@@ -176,7 +176,7 @@ class PIRSensor(BaseSensor):
             
             # Read initial state
             initial_state = GPIO.input(self.pir_pin)
-            self. logger.info(f"✅ PIR sensor ready!  Initial state: {'HIGH' if initial_state else 'LOW'}")
+            self.logger.info(f"✅ PIR sensor ready!  Initial state: {'HIGH' if initial_state else 'LOW'}")
             
         except Exception as e:
             self.logger.error(f"Failed to initialise PIR sensor: {e}")
@@ -206,18 +206,18 @@ class PIRSensor(BaseSensor):
         """Turn LED off"""
         if self.enable_led and HARDWARE_AVAILABLE: 
             try:
-                GPIO. output(self.led_pin, GPIO.LOW)
+                GPIO.output(self.led_pin, GPIO.LOW)
             except:
                 pass
     
     def _buzzer_on(self, frequency: Optional[int] = None):
         """Turn buzzer on with PWM"""
-        if not self.enable_buzzer or not self. buzzer_pwm:
+        if not self.enable_buzzer or not self.buzzer_pwm:
             return
         
         try:
             if frequency:
-                self.buzzer_pwm. ChangeFrequency(frequency)
+                self.buzzer_pwm.ChangeFrequency(frequency)
             self.buzzer_pwm.ChangeDutyCycle(50)  # 50% duty cycle
         except: 
             pass
@@ -245,7 +245,7 @@ class PIRSensor(BaseSensor):
     def _beep_pattern(self):
         """Play beep pattern on motion detection"""
         for i in range(self.beep_count):
-            self._beep(self.beep_duration, self. buzzer_frequency)
+            self._beep(self.beep_duration, self.buzzer_frequency)
             if i < self.beep_count - 1:
                 time.sleep(0.1)
     
@@ -258,7 +258,7 @@ class PIRSensor(BaseSensor):
         """
         self._total_readings += 1
         
-        if not self. is_initialised or not self._calibration_complete:
+        if not self.is_initialised or not self._calibration_complete:
             self.logger.warning("Sensor not calibrated yet")
             return None
         
@@ -407,7 +407,7 @@ class PIRSensor(BaseSensor):
         avg_duration = self.get_average_motion_duration()
         time_since = self.time_since_last_motion()
         
-        last_minute = self. get_motion_count(60)
+        last_minute = self.get_motion_count(60)
         last_hour = self.get_motion_count(3600)
         
         return {
@@ -430,13 +430,13 @@ class PIRSensor(BaseSensor):
         """Reset all statistics and history"""
         self._total_motion_events = 0
         self._total_readings = 0
-        self._motion_durations. clear()
+        self._motion_durations.clear()
         self._motion_history.clear()
         self.logger.info("Statistics reset")
     
     def test_alerts(self):
         """Test buzzer and LED"""
-        self. logger.info("Testing alerts...")
+        self.logger.info("Testing alerts...")
         
         # Test melody
         notes = [
@@ -481,10 +481,10 @@ class PIRSensor(BaseSensor):
                 
                 # Stop PWM
                 if self.buzzer_pwm:
-                    self.buzzer_pwm. stop()
+                    self.buzzer_pwm.stop()
                 
                 # Cleanup GPIO
-                GPIO.cleanup([self.pir_pin, self.buzzer_pin, self. led_pin])
+                GPIO.cleanup([self.pir_pin, self.buzzer_pin, self.led_pin])
                 self.logger.info("PIR sensor cleaned up")
             except Exception as e:
                 self.logger.warning(f"Error during cleanup: {e}")

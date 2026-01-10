@@ -102,7 +102,7 @@ class LightSensor(BaseSensor):
             
             self.is_initialised = True
             self.logger.info(
-                f"Light sensor initialised:  SPI {self.spi_bus}. {self.spi_device}, "
+                f"Light sensor initialised:  SPI {self.spi_bus}.{self.spi_device}, "
                 f"CH{self.adc_channel}, smoothing={self.smoothing_samples}"
             )
             
@@ -113,7 +113,7 @@ class LightSensor(BaseSensor):
                 self.logger.info(f"Initial reading: ADC={test_value}, {test_lux:.1f} lux")
                 
         except FileNotFoundError:
-            self. logger.error("SPI device not found. Enable SPI:  sudo raspi-config → Interface → SPI")
+            self.logger.error("SPI device not found. Enable SPI:  sudo raspi-config → Interface → SPI")
             self.is_initialised = False
         except Exception as e:
             self.logger.error(f"Failed to initialise light sensor: {e}")
@@ -150,7 +150,7 @@ class LightSensor(BaseSensor):
         self._reading_buffer.append(raw_value)
         
         if len(self._reading_buffer) > self.smoothing_samples:
-            self._reading_buffer. pop(0)
+            self._reading_buffer.pop(0)
         
         return sum(self._reading_buffer) // len(self._reading_buffer)
     
@@ -192,7 +192,7 @@ class LightSensor(BaseSensor):
         """
         if not HARDWARE_AVAILABLE or not self.is_initialised:
             reading = self._simulate_light()
-            self. increment_read_count()
+            self.increment_read_count()
             return reading
         
         try:
@@ -221,7 +221,7 @@ class LightSensor(BaseSensor):
         Returns: 
             Dictionary with ADC value, voltage, lux, and metadata
         """
-        if not HARDWARE_AVAILABLE or not self. is_initialised:
+        if not HARDWARE_AVAILABLE or not self.is_initialised:
             lux = self._simulate_light()
             return {
                 'lux': lux,
@@ -247,7 +247,7 @@ class LightSensor(BaseSensor):
     def get_light_level_category(self, lux: float = None) -> str:
         """Get human-readable light level category"""
         if lux is None:
-            lux = self. read()
+            lux = self.read()
             if lux is None:
                 return "Unknown"
         
@@ -334,7 +334,7 @@ if __name__ == "__main__":
                 current_time = time.strftime("%H:%M:%S")
                 
                 if data['simulated']:
-                    print(f"{current_time: <12} {'SIM':<8} {'SIM':<12} {lux:<10. 1f} {category:<15}", end='\r')
+                    print(f"{current_time: <12} {'SIM':<8} {'SIM':<12} {lux:<10.1f} {category:<15}", end='\r')
                 else:
                     adc = data['adc_value']
                     voltage = data['voltage']
@@ -349,7 +349,7 @@ if __name__ == "__main__":
         print(f"\n📊 Statistics:")
         print(f"   Total reads:    {info['read_count']}")
         print(f"   Errors:         {info['error_count']}")
-        print(f"   Success rate:   {sensor. get_success_rate():.1f}%")
+        print(f"   Success rate:   {sensor.get_success_rate():.1f}%")
         print("=" * 70)
         
     finally:
