@@ -60,7 +60,7 @@ class DHT22Sensor(BaseSensor):
         try:
             # Initialise DHT22 on specified GPIO
             pin = getattr(board, f'D{self.gpio_pin}')
-            self.dht_device = adafruit_dht. DHT22(pin, use_pulseio=False)
+            self.dht_device = adafruit_dht.DHT22(pin, use_pulseio=False)
             
             self.is_initialised = True
             self.logger.info(f"DHT22 sensor initialised on GPIO {self.gpio_pin}")
@@ -83,7 +83,7 @@ class DHT22Sensor(BaseSensor):
         """
         # Rate limiting
         current_time = time.time()
-        if current_time - self._last_read_time < self. MIN_READ_INTERVAL: 
+        if current_time - self._last_read_time < self.MIN_READ_INTERVAL: 
             # Return last known values if reading too frequently
             if self._last_temperature is not None and self._last_humidity is not None:
                 return (self._last_temperature, self._last_humidity)
@@ -94,8 +94,8 @@ class DHT22Sensor(BaseSensor):
             return self._simulate_readings()
         
         try: 
-            temperature = self.dht_device. temperature
-            humidity = self. dht_device.humidity
+            temperature = self.dht_device.temperature
+            humidity = self.dht_device.humidity
             
             if temperature is not None and humidity is not None: 
                 self._last_temperature = round(temperature, 1)
@@ -247,7 +247,7 @@ class DHT22Sensor(BaseSensor):
     
     def cleanup(self):
         """Clean up DHT sensor resources"""
-        if self. dht_device: 
+        if self.dht_device: 
             try:
                 self.dht_device.exit()
                 self.logger.info("DHT22 sensor cleaned up")
@@ -315,9 +315,9 @@ if __name__ == "__main__":
         
         if reading:
             print(f"\n📈 Last Reading:")
-            print(f"   Temperature:     {temp:. 1f} °C")
+            print(f"   Temperature:     {temp:.1f} °C")
             print(f"   Humidity:       {humidity:.1f} %")
-            print(f"   Heat Index:     {heat_index:. 1f} °C")
+            print(f"   Heat Index:     {heat_index:.1f} °C")
             print(f"   Dew Point:      {dew_point:.1f} °C")
         
         print("=" * 70)
