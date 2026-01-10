@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database + TimescaleDB
+  db:
+    image:  timescale/timescaledb:latest-pg16
+    container_name: smarthome-db
+    restart: unless-stopped
+    environment: 
+      POSTGRES_USER: iot_user
+      POSTGRES_PASSWORD:  i0tUs3r
+      POSTGRES_DB: smart_home_iot
+      TIMESCALEDB_TELEMETRY: 'off'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ../database/02_seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    networks:
+      - smarthome-network
+    healthcheck:
+      test:  ["CMD-SHELL", "pg_isready -U iot_user -d smart_home_iot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: 
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=timescaledb"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+
+  # Backend API (Flask)
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: smarthome-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://iot_user:i0tUs3r@db:5432/smart_home_iot
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+    networks:
+      - smarthome-network
+    command: python run.py
+
+volumes:
+  postgres_data: 
+    driver: local
+
+networks:
+  smarthome-network:
+    driver: bridge
