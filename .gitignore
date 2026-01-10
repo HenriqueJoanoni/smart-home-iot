@@ -1,7 +1,9 @@
 # Environment variables
 .env
-*. env
+*.env
 !.env.example
+backend/.env
+raspberry-pi/.env
 
 # Python
 __pycache__/
@@ -14,7 +16,7 @@ venv/
 ENV/
 build/
 dist/
-*. egg-info/
+*.egg-info/
 
 # Node
 node_modules/
@@ -23,17 +25,17 @@ yarn-debug. log*
 yarn-error.log*
 .pnpm-debug.log*
 build/
-. DS_Store
+.DS_Store
 
 # IDEs
 .vscode/
-. idea/
-*. swp
+.idea/
+*.swp
 *.swo
 *~
 
 # Docker
-*. log
+*.log
 
 # Database
 *.db
@@ -47,4 +49,7 @@ Thumbs.db
 *.pem
 *.key
 *.crt
-! *.example.*
+!*.example.*
+
+# Test Files
+*/test*
