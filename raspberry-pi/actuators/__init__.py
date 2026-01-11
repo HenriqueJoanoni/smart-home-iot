@@ -1,4 +1,4 @@
-from .led_controller import LEDController
+from .led_controller import GreenLEDController
 from .buzzer_controller import BuzzerController
 
-__all__ = ['LEDController', 'BuzzerController']
+__all__ = ['GreenLEDController', 'BuzzerController']
