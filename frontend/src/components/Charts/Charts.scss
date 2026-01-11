@@ -1,0 +1,46 @@
+/**
+ * Charts Styles
+ */
+
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.chart-container {
+  background: $white;
+  padding: map-get($spacing, 4);
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  min-height: 300px;
+  @include flex-center;
+  
+  &--error,
+  &--empty {
+    p {
+      color: $text-muted;
+      font-style: italic;
+    }
+  }
+  
+  &--error p {
+    color: $danger-color;
+  }
+}
+
+// Recharts custom styles
+.recharts-wrapper {
+  .recharts-cartesian-axis-tick-value {
+    font-size: $font-size-sm;
+    fill: $text-muted;
+  }
+  
+  .recharts-tooltip-wrapper {
+    z-index: $z-index-tooltip;
+  }
+}
+
+// Responsive
+@include respond-to('md') {
+  .chart-container {
+    padding: map-get($spacing, 6);
+  }
+}

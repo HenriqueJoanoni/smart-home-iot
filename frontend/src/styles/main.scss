@@ -26,14 +26,14 @@
 
 body {
   margin: 0;
-  font-family: $font-family-base;
+  font-family:  $font-family-base;
   font-size: $font-size-base;
   font-weight: $font-weight-normal;
-  line-height:  $line-height-base;
+  line-height: $line-height-base;
   color: $text-color;
   background-color: $background-color;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: greyscale;
+  -moz-osx-font-smoothing:  greyscale;
 }
 
 #root {

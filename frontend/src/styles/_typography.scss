@@ -1,0 +1,115 @@
+/**
+ * Typography Styles
+ */
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: map-get($spacing, 3);
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  color: $text-color;
+}
+
+h1 {
+  font-size: $font-size-xl * 2; // 40px
+  
+  @include respond-to('md') {
+    font-size: $font-size-xl * 2.5; // 50px
+  }
+}
+
+h2 {
+  font-size: $font-size-xl * 1.5; // 30px
+  
+  @include respond-to('md') {
+    font-size: $font-size-xl * 2; // 40px
+  }
+}
+
+h3 {
+  font-size: $font-size-xl * 1.25; // 25px
+  
+  @include respond-to('md') {
+    font-size: $font-size-xl * 1.5; // 30px
+  }
+}
+
+h4 {
+  font-size: $font-size-lg;
+}
+
+h5 {
+  font-size: $font-size-base;
+}
+
+h6 {
+  font-size: $font-size-sm;
+}
+
+// Paragraphs
+p {
+  margin-top: 0;
+  margin-bottom:  map-get($spacing, 4);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Text utilities
+.text-primary {
+  color: $primary-color ! important;
+}
+
+.text-secondary {
+  color: $secondary-color !important;
+}
+
+.text-success {
+  color: $success-color !important;
+}
+
+.text-warning {
+  color: $warning-color !important;
+}
+
+.text-danger {
+  color:  $danger-color !important;
+}
+
+.text-muted {
+  color: $text-muted !important;
+}
+
+.text-sm {
+  font-size: $font-size-sm !important;
+}
+
+.text-lg {
+  font-size: $font-size-lg !important;
+}
+
+.text-xl {
+  font-size: $font-size-xl !important;
+}
+
+.text-bold {
+  font-weight: $font-weight-bold !important;
+}
+
+.text-semibold {
+  font-weight: $font-weight-semibold !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
