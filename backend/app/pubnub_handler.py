@@ -64,46 +64,44 @@ class PubNubHandler:
         self.logger.info("✅ PubNub handler initialized and listening")
     
     def handle_sensor_message(self, message):
-        """
-        Handle incoming sensor data from PubNub
-        Saves to database and checks thresholds
-        """
         try:
             with self.app.app_context():
-                # ✅ Log recebimento
                 self.logger.info(f"📨 [SENSOR HANDLER] Received message on sensor channel")
                 self.logger.debug(f"   Message: {message}")
 
                 msg_type = message.get('type')
-                if msg_type != 'sensor_data': 
+                if msg_type != 'sensor_data':  
                     self.logger.warning(
                         f"[SENSOR HANDLER] Expected sensor_data, got {msg_type}. Ignoring."
                     )
                     return
                 
-                # Save sensor reading to database
-                reading = self.sensor_service.save_reading(message)
+                readings = self.sensor_service.save_reading(message)
                 
-                if reading:
+                if readings: 
+                    # Log summary
+                    sensor_summary = ", ".join([
+                        f"{r.sensor_type}={r.value}{r.unit}" 
+                        for r in readings
+                    ])
                     self.logger.info(
-                        f"✅ Saved sensor reading: {reading.device_id}/{reading.sensor_type} "
-                        f"= {reading.value}{reading.unit}"
-                    )
-
-                    # Check thresholds
-                    alert = self.alert_service.check_thresholds(
-                        sensor_type=reading.sensor_type,
-                        value=float(reading.value),
-                        device_id=reading.device_id
+                        f"✅ Saved {len(readings)} sensor readings: {sensor_summary}"
                     )
                     
-                    if alert:
-                        self.logger.warning(
-                            f"⚠️ Alert triggered: {alert.alert_type} - {alert.message}"
+                    for reading in readings:
+                        alert = self.alert_service.check_thresholds(
+                            sensor_type=reading.sensor_type,
+                            value=float(reading.value),
+                            device_id=reading.device_id
                         )
+                        
+                        if alert:
+                            self.logger.warning(
+                                f"⚠️ Alert triggered: {alert.alert_type} - {alert.message}"
+                            )
                     
         except Exception as e:
-            self.logger.error(f"❌ Error handling sensor message: {e}")
+            self.logger.error(f"❌ Error handling sensor message:  {e}")
             import traceback
             traceback.print_exc()
     

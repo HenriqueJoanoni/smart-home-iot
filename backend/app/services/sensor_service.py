@@ -1,7 +1,6 @@
 import logging
-from datetime import datetime,timezone,timedelta
-from typing import List, Optional, Dict
-from sqlalchemy import func, desc
+from datetime import datetime, timezone
+from typing import Optional, Dict, List
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db
@@ -9,35 +8,92 @@ from app.models.sensor_data import SensorReading
 
 
 class SensorService:
-    """Service for managing sensor data"""
+    """Service for managing sensor readings"""
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
     
-    def save_reading(self, sensor_data: Dict) -> Optional[SensorReading]:
+    def save_reading(self, message: Dict) -> Optional[List[SensorReading]]: 
         """
-        Save sensor reading to database
+        Save sensor reading(s) from PubNub message
+ 
+        Message format:
+        {
+            'type': 'sensor_data',
+            'device_id': 'rpi-001',
+            'location': 'living_room',
+            'temperature': 22.5,      # ← Sensor 1
+            'humidity': 55.0,         # ← Sensor 2
+            'light': 450.0,           # ← Sensor 3
+            'motion': True,           # ← Sensor 4
+            'timestamp': '2025-01-01T12:00:00Z'
+        }
         
         Args:
-            sensor_data: Dictionary with sensor data from PubNub
+            message: PubNub sensor data message
         
         Returns:
-            Created SensorReading or None if error
+            List of saved SensorReading objects or None if error
         """
         try: 
-            # Create model from PubNub message
-            reading = SensorReading.from_pubnub_message(sensor_data)
+            # Extract common fields
+            device_id = message.get('device_id', 'unknown')
+            location = message.get('location', 'living_room')
+            timestamp_str = message.get('timestamp')
             
-            # Save to database
-            db.session.add(reading)
+            # Parse timestamp
+            if timestamp_str:
+                try: 
+                    from dateutil.parser import parse
+                    timestamp = parse(timestamp_str)
+                except:
+                    timestamp = datetime.now(timezone.utc)
+            else:
+                timestamp = datetime.now(timezone.utc)
+            
+            readings = []
+            
+            # Sensor mappings:  field_name -> (unit, sensor_type)
+            sensor_mappings = {
+                'temperature':  ('°C', 'temperature'),
+                'humidity': ('%', 'humidity'),
+                'light': ('lux', 'light'),
+                'motion':  ('boolean', 'motion')
+            }
+            
+            for field, (unit, sensor_type) in sensor_mappings.items():
+                if field in message and message[field] is not None:
+                    # Convert boolean motion to numeric
+                    value = message[field]
+                    if field == 'motion': 
+                        value = 1.0 if value else 0.0
+                    
+                    # Create individual reading
+                    reading = SensorReading(
+                        timestamp=timestamp,
+                        sensor_type=sensor_type,
+                        value=float(value),
+                        unit=unit,
+                        location=location,
+                        device_id=device_id,
+                        meta=message.get('metadata', {})
+                    )
+                    
+                    readings.append(reading)
+                    db.session.add(reading)
+            
+            if not readings:
+                self.logger.warning(f"No sensor data found in message: {message}")
+                return None
+            
+            # Commit all readings
             db.session.commit()
             
-            self.logger.info(
-                f"Saved sensor reading: {reading.sensor_type}="
-                f"{reading.value}{reading.unit} from {reading.device_id}"
-            )
+            # Log success
+            sensor_summary = ", ".join([f"{r.sensor_type}={r.value}{r.unit}" for r in readings])
+            self.logger.info(f"Saved {len(readings)} readings: {sensor_summary}")
             
-            return reading
+            return readings
             
         except SQLAlchemyError as e:
             self.logger.error(f"Database error saving sensor reading: {e}")
@@ -48,119 +104,16 @@ class SensorService:
             db.session.rollback()
             return None
     
-    def get_latest_reading(
-        self,
-        sensor_type: str,
-        location: Optional[str] = None,
-        device_id: Optional[str] = None
-    ) -> Optional[SensorReading]:
-        """Get latest reading for sensor type"""
+    def get_latest_reading(self, sensor_type: str, device_id: str = None) -> Optional[SensorReading]:
+        """Get latest reading for a sensor type"""
         try:
             query = SensorReading.query.filter_by(sensor_type=sensor_type)
-            
-            if location:
-                query = query.filter_by(location=location)
             
             if device_id:
                 query = query.filter_by(device_id=device_id)
             
-            return query.order_by(desc(SensorReading.timestamp)).first()
+            return query.order_by(SensorReading.timestamp.desc()).first()
             
         except Exception as e:
             self.logger.error(f"Error getting latest reading: {e}")
             return None
-    
-    def get_readings_in_range(
-        self,
-        sensor_type: str,
-        start_time: datetime,
-        end_time: Optional[datetime] = None,
-        location: Optional[str] = None,
-        limit: int = 1000
-    ) -> List[SensorReading]:
-        """Get sensor readings within time range"""
-        try:
-            if end_time is None:
-                end_time = datetime.now(timezone.utc)
-            
-            query = SensorReading.query.filter(
-                SensorReading.sensor_type == sensor_type,
-                SensorReading.timestamp >= start_time,
-                SensorReading.timestamp <= end_time
-            )
-            
-            if location:
-                query = query.filter_by(location=location)
-            
-            return query.order_by(desc(SensorReading.timestamp)).limit(limit).all()
-            
-        except Exception as e:
-            self.logger.error(f"Error getting readings in range: {e}")
-            return []
-    
-    def get_statistics(
-        self,
-        sensor_type: str,
-        start_time: datetime,
-        end_time: Optional[datetime] = None,
-        location: Optional[str] = None
-    ) -> Optional[Dict]:
-        """Get statistics for sensor type in time range"""
-        try: 
-            if end_time is None: 
-                end_time = datetime.now(timezone.utc)
-            
-            query = db.session.query(
-                func.avg(SensorReading.value).label('avg'),
-                func.min(SensorReading.value).label('min'),
-                func.max(SensorReading.value).label('max'),
-                func.stddev(SensorReading.value).label('stddev'),
-                func.count(SensorReading.id).label('count')
-            ).filter(
-                SensorReading.sensor_type == sensor_type,
-                SensorReading.timestamp >= start_time,
-                SensorReading.timestamp <= end_time
-            )
-            
-            if location:
-                query = query.filter(SensorReading.location == location)
-            
-            result = query.first()
-            
-            if result:
-                return {
-                    'sensor_type': sensor_type,
-                    'avg':  float(result.avg) if result.avg else None,
-                    'min': float(result.min) if result.min else None,
-                    'max':  float(result.max) if result.max else None,
-                    'stddev': float(result.stddev) if result.stddev else None,
-                    'count': result.count,
-                    'start_time': start_time.isoformat(),
-                    'end_time': end_time.isoformat()
-                }
-            
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"Error getting statistics: {e}")
-            return None
-    
-    def get_all_latest_readings(self) -> Dict[str, SensorReading]:
-        """Get latest reading for each sensor type"""
-        try: 
-            # Get distinct sensor types
-            sensor_types = db.session.query(
-                SensorReading.sensor_type
-            ).distinct().all()
-            
-            results = {}
-            for (sensor_type,) in sensor_types:
-                latest = self.get_latest_reading(sensor_type)
-                if latest:
-                    results[sensor_type] = latest
-            
-            return results
-            
-        except Exception as e:
-            self.logger.error(f"Error getting all latest readings: {e}")
-            return {}
