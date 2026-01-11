@@ -1,0 +1,153 @@
+/**
+ * Dashboard Styles
+ */
+
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// Layout
+.dashboard-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $background-color;
+}
+
+// Main Dashboard
+.dashboard {
+  flex: 1;
+  padding: map-get($spacing, 6) 0;
+}
+
+.dashboard__container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 map-get($spacing, 4);
+  
+  @include respond-to('md') {
+    padding: 0 map-get($spacing, 6);
+  }
+}
+
+// Hero Section
+.dashboard__hero {
+  text-align:  center;
+  margin-bottom: map-get($spacing, 8);
+  animation: fadeIn 0.6s ease-out;
+}
+
+.dashboard__title {
+  font-size: $font-size-xl * 1.5;
+  font-weight: $font-weight-bold;
+  color: $text-color;
+  margin-bottom: map-get($spacing, 3);
+  
+  @include respond-to('md') {
+    font-size: $font-size-xl * 2;
+  }
+}
+
+.dashboard__description {
+  font-size: $font-size-lg;
+  color: $text-muted;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// Sections
+.dashboard__section {
+  margin-bottom: map-get($spacing, 8);
+  animation: slideUp 0.6s ease-out;
+  animation-fill-mode: both;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+.dashboard__section-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $text-color;
+  margin-bottom: map-get($spacing, 5);
+  padding-bottom: map-get($spacing, 3);
+  border-bottom: 2px solid $grey-200;
+}
+
+// Grids
+.dashboard__grid {
+  display: grid;
+  gap: map-get($spacing, 4);
+  
+  @include respond-to('md') {
+    gap: map-get($spacing, 6);
+  }
+}
+
+// Sensor Cards Grid
+.dashboard__grid--cards {
+  grid-template-columns: 1fr;
+  
+  @include respond-to('sm') {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include respond-to('lg') {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Charts Grid
+.dashboard__grid--charts {
+  grid-template-columns:  1fr;
+  
+  @include respond-to('lg') {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include respond-to('xl') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.dashboard__chart-card {
+  background: $white;
+  padding: map-get($spacing, 5);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+  transition: $transition-base;
+  
+  &:hover {
+    box-shadow: $box-shadow-md;
+  }
+}
+
+.dashboard__chart-title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color:  $text-color;
+  margin-bottom: map-get($spacing, 4);
+}
+
+// Controls Grid
+.dashboard__grid--controls {
+  grid-template-columns:  1fr;
+  
+  @include respond-to('md') {
+    grid-template-columns:  repeat(2, 1fr);
+  }
+}
+
+// Responsive adjustments
+@include respond-to('sm') {
+  .dashboard {
+    padding: map-get($spacing, 8) 0;
+  }
+}
+
+@include respond-to('md') {
+  .dashboard__section {
+    margin-bottom: map-get($spacing, 10);
+  }
+}

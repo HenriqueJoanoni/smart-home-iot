@@ -1,49 +1,33 @@
+/**
+ * Mixins - Reusable SASS utilities
+ */
+
 // ================================
 // RESPONSIVE BREAKPOINTS
 // ================================
-@mixin respond-above($breakpoint) {
-  @if $breakpoint == sm {
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (min-width: $breakpoint-xs) {
+      @content;
+    }
+  } @else if $breakpoint == 'sm' {
     @media (min-width: $breakpoint-sm) {
       @content;
     }
-  } @else if $breakpoint == md {
+  } @else if $breakpoint == 'md' {
     @media (min-width: $breakpoint-md) {
       @content;
     }
-  } @else if $breakpoint == lg {
+  } @else if $breakpoint == 'lg' {
     @media (min-width: $breakpoint-lg) {
       @content;
     }
-  } @else if $breakpoint == xl {
+  } @else if $breakpoint == 'xl' {
     @media (min-width: $breakpoint-xl) {
       @content;
     }
-  } @else if $breakpoint == xxl {
+  } @else if $breakpoint == 'xxl' {
     @media (min-width: $breakpoint-xxl) {
-      @content;
-    }
-  }
-}
-
-@mixin respond-below($breakpoint) {
-  @if $breakpoint == sm {
-    @media (max-width: $breakpoint-sm-1) {
-      @content;
-    }
-  } @else if $breakpoint == md {
-    @media (max-width: $breakpoint-md-1) {
-      @content;
-    }
-  } @else if $breakpoint == lg {
-    @media (max-width:  $breakpoint-lg-1) {
-      @content;
-    }
-  } @else if $breakpoint == xl {
-    @media (max-width: $breakpoint-xl-1) {
-      @content;
-    }
-  } @else if $breakpoint == xxl {
-    @media (max-width: $breakpoint-xxl-1) {
       @content;
     }
   }
@@ -52,16 +36,16 @@
 // ================================
 // FLEXBOX
 // ================================
-@mixin flex-centre {
+@mixin flex-center {
   display: flex;
-  justify-content: centre;
-  align-items: centre;
+  justify-content: center;
+  align-items: center;
 }
 
 @mixin flex-between {
   display: flex;
   justify-content: space-between;
-  align-items: centre;
+  align-items: center;
 }
 
 @mixin flex-column {
@@ -70,47 +54,13 @@
 }
 
 // ================================
-// POSITIONING
-// ================================
-@mixin absolute-centre {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-@mixin absolute-cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height:  100%;
-}
-
-// ================================
-// TYPOGRAPHY
-// ================================
-@mixin text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space:  nowrap;
-}
-
-@mixin text-clamp($lines: 2) {
-  display: -webkit-box;
-  -webkit-line-clamp:  $lines;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-// ================================
 // CARDS
 // ================================
 @mixin card {
   background: $card-background;
-  padding: $card-padding;
-  border-radius:  $card-border-radius;
+  border-radius: $card-border-radius;
   box-shadow: $card-shadow;
+  padding: $card-padding;
   transition: $transition-base;
 
   &:hover {
@@ -124,17 +74,17 @@
 // ================================
 @mixin button-base {
   display: inline-flex;
-  align-items: centre;
-  justify-content: centre;
+  align-items: center;
+  justify-content: center;
   padding: $button-padding-y $button-padding-x;
   border:  none;
   border-radius:  $button-border-radius;
   font-weight: $font-weight-medium;
-  font-size: $font-size-base;
-  line-height:  1;
   cursor: pointer;
   transition: $transition-base;
-  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
 
   &:disabled {
     opacity: 0.6;
@@ -142,77 +92,110 @@
   }
 }
 
-@mixin button-variant($background, $color:  $white) {
+@mixin button-variant($bg-color, $text-color:  $white) {
   @include button-base;
-  background-color: $background;
-  color: $color;
+  background-color: $bg-color;
+  color: $text-color;
 
   &:hover:not(:disabled) {
-    background-color: darken($background, 8%);
+    background-color: darken($bg-color, 8%);
   }
 
   &:active:not(:disabled) {
-    background-color: darken($background, 12%);
+    background-color: darken($bg-color, 12%);
   }
 }
 
 // ================================
-// GRADIENTS
+// TRUNCATE TEXT
 // ================================
-@mixin gradient-background($start, $end, $angle: 135deg) {
-  background: linear-gradient($angle, $start 0%, $end 100%);
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-// ================================
-// ANIMATIONS
-// ================================
-@mixin fade-in($duration: 0.3s) {
-  animation: fadeIn $duration ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@mixin slide-up($duration:  0.3s) {
-  animation: slideUp $duration ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform:  translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 // ================================
 // SCROLLBAR
 // ================================
-@mixin custom-scrollbar($width: 8px) {
+@mixin custom-scrollbar(
+  $width: 8px,
+  $track-color: $grey-200,
+  $thumb-color:  $grey-400
+) {
   &::-webkit-scrollbar {
-    width: $width;
+    width:  $width;
+    height: $width;
   }
 
   &::-webkit-scrollbar-track {
-    background: $grey-200;
-    border-radius: $border-radius-pill;
+    background: $track-color;
+    border-radius:  $border-radius;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: $grey-400;
-    border-radius: $border-radius-pill;
+    background: $thumb-color;
+    border-radius: $border-radius;
 
     &:hover {
-      background: $grey-500;
+      background: darken($thumb-color, 10%);
     }
+  }
+}
+
+// ================================
+// ANIMATION
+// ================================
+@mixin fade-in($duration: 0.3s) {
+  animation: fadeIn $duration ease-in;
+}
+
+@mixin slide-up($duration: 0.3s) {
+  animation: slideUp $duration ease-out;
+}
+
+// ================================
+// GRADIENT
+// ================================
+@mixin gradient-background($gradient) {
+  background: $gradient;
+  background-size: 100% 100%;
+}
+
+// ================================
+// ABSOLUTE CENTER
+// ================================
+@mixin absolute-center {
+  position:  absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// ================================
+// ASPECT RATIO
+// ================================
+@mixin aspect-ratio($width, $height) {
+  position: relative;
+  
+  &::before {
+    content: '';
+    display: block;
+    padding-top: calc(($height / $width) * 100%);
+  }
+
+  > * {
+    position:  absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }

@@ -1,0 +1,209 @@
+/**
+ * Sensor Cards Styles
+ */
+
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.sensor-card {
+  @include card;
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+  transition: $transition-base;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left:  0;
+    right: 0;
+    height: 4px;
+    background: $primary-color;
+    transition: $transition-base;
+  }
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $box-shadow-lg;
+  }
+}
+
+// Card variants
+.sensor-card--temperature::before {
+  background: $sensor-card-gradient-temp;
+}
+
+.sensor-card--humidity::before {
+  background: $sensor-card-gradient-humidity;
+}
+
+.sensor-card--light::before {
+  background: $sensor-card-gradient-light;
+}
+
+.sensor-card--motion::before {
+  background: $sensor-card-gradient-motion;
+}
+
+// Status variants
+.sensor-card--normal {
+  border-color: $success-color;
+}
+
+.sensor-card--low,
+.sensor-card--high {
+  border-color: $warning-color;
+  background: lighten($warning-color, 45%);
+}
+
+.sensor-card--active {
+  border-color: $info-color;
+  background: lighten($info-color, 48%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+// Header
+.sensor-card__header {
+  @include flex-between;
+  margin-bottom: map-get($spacing, 3);
+}
+
+.sensor-card__icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.sensor-card__status {
+  padding: map-get($spacing, 1) map-get($spacing, 2);
+  border-radius: $border-radius-pill;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-transform: capitalize;
+  
+  &--normal {
+    background: lighten($success-color, 45%);
+    color: darken($success-color, 10%);
+  }
+  
+  &--low,
+  &--high {
+    background: lighten($warning-color, 40%);
+    color: darken($warning-color, 15%);
+  }
+  
+  &--active {
+    background:  lighten($info-color, 40%);
+    color: darken($info-color, 15%);
+  }
+  
+  &--unknown {
+    background: $grey-200;
+    color: $grey-600;
+  }
+}
+
+// Content
+.sensor-card__content {
+  flex: 1;
+}
+
+.sensor-card__title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $text-muted;
+  margin-bottom:  map-get($spacing, 2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sensor-card__value {
+  font-size: $font-size-xl * 1.5;
+  font-weight: $font-weight-bold;
+  color: $text-color;
+  margin-bottom: map-get($spacing, 4);
+  line-height: 1.2;
+}
+
+// Footer
+.sensor-card__footer {
+  @include flex-between;
+  padding-top: map-get($spacing, 3);
+  border-top: 1px solid $grey-200;
+  font-size: $font-size-sm;
+  color: $text-muted;
+}
+
+.sensor-card__time {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacing, 1);
+  
+  &::before {
+    content: '🕐';
+    font-size: 0.9em;
+  }
+}
+
+.sensor-card__device {
+  font-family: $font-family-monospace;
+  font-size: $font-size-sm * 0.9;
+  padding: map-get($spacing, 1) map-get($spacing, 2);
+  background: $grey-100;
+  border-radius: $border-radius-sm;
+}
+
+// Loading state
+.sensor-card--loading {
+  pointer-events: none;
+  
+  .sensor-card__icon {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+.sensor-card__skeleton {
+  height: 40px;
+  background: linear-gradient(
+    90deg,
+    $grey-200 0%,
+    $grey-300 50%,
+    $grey-200 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: $border-radius;
+  margin:  map-get($spacing, 4) 0;
+}
+
+// Error state
+.sensor-card--error {
+  opacity: 0.7;
+}
+
+.sensor-card__error {
+  color: $danger-color;
+  font-style: italic;
+  margin:  map-get($spacing, 4) 0;
+}
+
+// Animations
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Responsive
+@include respond-to('sm') {
+  .sensor-card {
+    min-height: 200px;
+  }
+  
+  .sensor-card__value {
+    font-size: $font-size-xl * 2;
+  }
+}

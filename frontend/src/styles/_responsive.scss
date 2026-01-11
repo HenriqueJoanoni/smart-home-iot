@@ -1,0 +1,40 @@
+/**
+ * Responsive Utilities
+ */
+
+// Hide/Show on breakpoints
+@include respond-to('sm') {
+  .hide-sm {
+    display: none !important;
+  }
+  .show-sm {
+    display:  block !important;
+  }
+}
+
+@include respond-to('md') {
+  .hide-md {
+    display: none ! important;
+  }
+  .show-md {
+    display:  block !important;
+  }
+}
+
+@include respond-to('lg') {
+  .hide-lg {
+    display: none ! important;
+  }
+  .show-lg {
+    display:  block !important;
+  }
+}
+
+@include respond-to('xl') {
+  .hide-xl {
+    display: none !important;
+  }
+  .show-xl {
+    display: block !important;
+  }
+}

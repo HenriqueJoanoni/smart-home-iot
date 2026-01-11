@@ -1,0 +1,246 @@
+/**
+ * Common Components Styles
+ * Styles for Loading, ErrorBoundary, StatusIndicator
+ */
+
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// ================================
+// LOADING COMPONENT
+// ================================
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: map-get($spacing, 8);
+  
+  &--fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba($white, 0.95);
+    z-index: $z-index-modal;
+  }
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .spinner {
+    border: 3px solid $grey-200;
+    border-top-color: $primary-color;
+    border-radius:  $border-radius-pill;
+    animation: spin 1s linear infinite;
+  }
+  
+  // Sizes
+  &--small.spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+  }
+  
+  &--medium .spinner {
+    width: 40px;
+    height: 40px;
+    border-width:  3px;
+  }
+  
+  &--large .spinner {
+    width: 60px;
+    height: 60px;
+    border-width: 4px;
+  }
+}
+
+.loading-message {
+  margin-top: map-get($spacing, 4);
+  color: $text-muted;
+  font-size: $font-size-sm;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ================================
+// ERROR BOUNDARY COMPONENT
+// ================================
+
+.error-boundary {
+  @include flex-center;
+  min-height: 100vh;
+  padding: map-get($spacing, 6);
+  background:  linear-gradient(135deg, $grey-100 0%, $grey-200 100%);
+}
+
+.error-boundary__content {
+  max-width: 600px;
+  background: $white;
+  padding: map-get($spacing, 8);
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-xl;
+  text-align: center;
+}
+
+.error-boundary__icon {
+  font-size: 4rem;
+  margin-bottom:  map-get($spacing, 4);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.error-boundary__title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $text-color;
+  margin-bottom: map-get($spacing, 3);
+}
+
+.error-boundary__message {
+  color: $text-muted;
+  margin-bottom: map-get($spacing, 6);
+  line-height: $line-height-lg;
+}
+
+.error-boundary__details {
+  text-align: left;
+  margin-bottom: map-get($spacing, 6);
+  padding:  map-get($spacing, 4);
+  background: $grey-100;
+  border-radius: $border-radius;
+  
+  summary {
+    cursor: pointer;
+    font-weight: $font-weight-semibold;
+    color: $danger-color;
+    margin-bottom: map-get($spacing, 3);
+    
+    &:hover {
+      color: darken($danger-color, 10%);
+    }
+  }
+}
+
+.error-boundary__stack {
+  font-family: $font-family-monospace;
+  font-size: $font-size-sm;
+  color: $grey-800;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.error-boundary__button {
+  @include button-variant($primary-color, $white);
+  padding: map-get($spacing, 3) map-get($spacing, 6);
+  font-size: $font-size-base;
+  border-radius: $border-radius;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-md;
+  }
+}
+
+// ================================
+// STATUS INDICATOR COMPONENT
+// ================================
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: map-get($spacing, 2);
+}
+
+.status-indicator__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  
+  // Colors
+  &--success {
+    color: $success-color;
+  }
+  
+  &--danger {
+    color: $danger-color;
+  }
+  
+  &--warning {
+    color: $warning-color;
+  }
+  
+  &--info {
+    color: $info-color;
+  }
+  
+  &--muted {
+    color: $grey-400;
+  }
+  
+  // Animation
+  &--animated {
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+.status-indicator__label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-color;
+}
+
+// Sizes
+.status-indicator--small {
+  .status-indicator__dot {
+    font-size: 0.5rem;
+  }
+  
+  .status-indicator__label {
+    font-size: $font-size-sm * 0.875;
+  }
+}
+
+.status-indicator--medium {
+  .status-indicator__dot {
+    font-size: 0.75rem;
+  }
+}
+
+.status-indicator--large {
+  .status-indicator__dot {
+    font-size: 1rem;
+  }
+  
+  .status-indicator__label {
+    font-size: $font-size-base;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity:  0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform:  translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
