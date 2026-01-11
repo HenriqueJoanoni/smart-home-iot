@@ -21,7 +21,7 @@ from sensors.ldr_sensor import LightSensor
 from sensors.pir_sensor import PIRSensor
 
 # Actuators
-from actuators.led_controller import LEDController
+from actuators.led_controller import GreenLEDController
 from actuators.buzzer_controller import BuzzerController
 
 # Utilities
