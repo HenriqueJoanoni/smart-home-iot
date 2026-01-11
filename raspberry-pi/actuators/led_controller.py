@@ -5,7 +5,7 @@ except (ImportError, RuntimeError):
     HARDWARE_AVAILABLE = False
     GPIO = None
 
-from base_actuator import BaseActuator
+from .base_actuator import BaseActuator
 
 
 class GreenLEDController(BaseActuator):
