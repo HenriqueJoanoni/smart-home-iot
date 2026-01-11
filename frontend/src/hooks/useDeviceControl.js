@@ -1,12 +1,7 @@
-/**
- * useDeviceControl Hook
- * Controls devices (LED, Buzzer) via API and PubNub
- */
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { controlLED, controlBuzzer, getDeviceStatus } from '../services/api';
 
-const useDeviceControl = (pubnubSendCommand = null) => {
+const useDeviceControl = (pubnubSendCommand = null, pubnubMessages = []) => {
   const [deviceStates, setDeviceStates] = useState({
     led: { state: 'unknown', brightness: 100 },
     buzzer: { state: 'unknown' },
@@ -14,34 +9,118 @@ const useDeviceControl = (pubnubSendCommand = null) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Fetch initial status
+  useEffect(() => {
+    const fetchInitialStatus = async () => {
+      try {
+        const status = await getDeviceStatus();
+        if (status) {
+          console.log('[useDeviceControl] 📊 Initial status:', status);
+          setDeviceStates({
+            led: status.led || { state: 'off', brightness: 100 },
+            buzzer: status.buzzer || { state: 'off' },
+          });
+        }
+      } catch (err) {
+        console.error('[useDeviceControl] Failed to fetch initial status:', err);
+      }
+    };
+
+    fetchInitialStatus();
+  }, []);
+
+  // Listen to PubNub updates
+  useEffect(() => {
+    if (! pubnubMessages || pubnubMessages.length === 0) return;
+
+    const latestMessage = pubnubMessages[0];
+    
+    console.log('[useDeviceControl] 📨 Processing message:', {
+      channel: latestMessage.channel,
+      type: latestMessage.message?.type,
+      device: latestMessage.message?.device,
+      publisher: latestMessage.publisher,
+    });
+    
+    const messageType = latestMessage?.message?.type;
+    const device = latestMessage?.message?.device;
+    
+    if (messageType === 'state_update' && device) {
+      const { state, parameters } = latestMessage.message;
+      
+      console.log(`[useDeviceControl] 🔔 State update from PubNub: ${device} = ${state}`);
+      
+      setDeviceStates(prev => ({
+        ...prev,
+        [device]: {
+          ...prev[device],
+          state,
+          ...(parameters || {}),
+        },
+      }));
+    }
+  }, [pubnubMessages]);
+
   // Control LED
   const controlLed = useCallback(async (action, brightness = 100) => {
     setLoading(true);
     setError(null);
 
     try {
+      console.log(`[useDeviceControl] 🎮 LED ${action} (brightness: ${brightness})`);
+      
       // Send via API
       const result = await controlLED(action, brightness);
       
-      // Also send via PubNub if available
+      console.log('[useDeviceControl] 📡 API response:', result);
+      
+      if (result.success && result.state) {
+        const newState = {
+          state: result.state,
+          brightness: result.brightness || brightness,
+        };
+        
+        console.log('[useDeviceControl] ✅ Updating from API:', newState);
+        
+        setDeviceStates(prev => ({
+          ...prev,
+          led: newState,
+        }));
+      }
+      
+      // Send via PubNub
       if (pubnubSendCommand) {
         await pubnubSendCommand('led', action, { brightness });
       }
-
-      // Update local state
-      setDeviceStates(prev => ({
-        ...prev,
-        led: {
-          state: action === 'on' ? 'on' :  'off',
-          brightness,
-        },
-      }));
+      
+      setTimeout(async () => {
+        try {
+          const status = await getDeviceStatus();
+          if (status?.led) {
+            console.log('[useDeviceControl] 🔄 Fallback sync from DB:', status.led);
+            
+            setDeviceStates(prev => {
+              // Only update if different
+              if (prev.led.state !== status.led.state || 
+                  prev.led.brightness !== status.led.brightness) {
+                console.log('[useDeviceControl] 📝 State changed, updating');
+                return {
+                  ...prev,
+                  led: status.led,
+                };
+              }
+              return prev;
+            });
+          }
+        } catch (err) {
+          console.error('[useDeviceControl] Fallback sync failed:', err);
+        }
+      }, 1000);
 
       setLoading(false);
-      console.log('[useDeviceControl] LED controlled:', action, brightness);
       return result;
     } catch (err) {
-      console.error('[useDeviceControl] LED control failed:', err);
+      console.error('[useDeviceControl] ❌ LED control failed:', err);
       setError(err.message || 'Failed to control LED');
       setLoading(false);
       return null;
@@ -54,27 +133,49 @@ const useDeviceControl = (pubnubSendCommand = null) => {
     setError(null);
 
     try {
-      // Send via API
+      console.log(`[useDeviceControl] 🎮 Buzzer ${action}`);
+      
       const result = await controlBuzzer(action);
       
-      // Also send via PubNub if available
+      console.log('[useDeviceControl] 📡 API response:', result);
+      
+      // Update from API
+      if (result.success && result.state) {
+        console.log('[useDeviceControl] ✅ Updating from API:', result.state);
+        
+        setDeviceStates(prev => ({
+          ...prev,
+          buzzer: {
+            state: result.state,
+          },
+        }));
+      }
+      
+      // Send via PubNub
       if (pubnubSendCommand) {
         await pubnubSendCommand('buzzer', action);
       }
-
-      // Update local state
-      setDeviceStates(prev => ({
-        ...prev,
-        buzzer: {
-          state: action,
-        },
-      }));
+      
+      // Fallback sync
+      setTimeout(async () => {
+        try {
+          const status = await getDeviceStatus();
+          if (status?.buzzer) {
+            console.log('[useDeviceControl] 🔄 Fallback sync from DB:', status.buzzer);
+            setDeviceStates(prev => ({
+              ...prev,
+              buzzer: status.buzzer,
+            }));
+          }
+        } catch (err) {
+          console.error('[useDeviceControl] Fallback sync failed:', err);
+        }
+      }, 1000);
 
       setLoading(false);
-      console.log('[useDeviceControl] Buzzer controlled:', action);
       return result;
     } catch (err) {
-      console.error('[useDeviceControl] Buzzer control failed:', err);
+      console.error('[useDeviceControl] ❌ Buzzer control failed:', err);
       setError(err.message || 'Failed to control buzzer');
       setLoading(false);
       return null;
