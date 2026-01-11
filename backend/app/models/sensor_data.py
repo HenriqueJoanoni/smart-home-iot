@@ -1,4 +1,4 @@
-from datetime import datetime,timezone
+from datetime import datetime, timezone
 from app.extensions import db
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -7,9 +7,14 @@ class SensorReading(db.Model):
     """Sensor readings time-series data"""
     
     __tablename__ = 'sensor_readings'
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    timestamp = db.Column(
+        db.DateTime(timezone=True), 
+        primary_key=True,  
+        nullable=False, 
+        default=lambda: datetime.now(timezone.utc)
+    )
     
-    id = db.Column(db.BigInteger, primary_key=True)
-    timestamp = db.Column(db.DateTime(timezone=True), primary_key=True, nullable=False, default=datetime.now(timezone.utc))
     sensor_type = db.Column(db.String(50), nullable=False)
     value = db.Column(db.Numeric(10, 2), nullable=False)
     unit = db.Column(db.String(20), nullable=False)
@@ -26,10 +31,10 @@ class SensorReading(db.Model):
             'id': self.id,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'sensor_type': self.sensor_type,
-            'value':  float(self.value) if self.value else None,
+            'value': float(self.value) if self.value else None,
             'unit': self.unit,
             'location': self.location,
-            'device_id': self.device_id,
+            'device_id':  self.device_id,
             'metadata': self.meta or {}
         }
     
@@ -42,18 +47,18 @@ class SensorReading(db.Model):
         {
             'type': 'sensor_data',
             'device_id': 'rpi-001',
-            'sensor_type':  'temperature',
-            'value': 22.5,
-            'unit':  '°C',
             'location': 'living_room',
-            'timestamp': '2025-01-01T12:00:00Z',
-            'metadata': {}
+            'temperature': 22.5,
+            'humidity': 55.0,
+            'light': 450.0,
+            'motion': True,
+            'timestamp': '2025-01-01T12:00:00Z'
         }
         """
         # Parse timestamp
         timestamp_str = message.get('timestamp')
-        if timestamp_str: 
-            try:
+        if timestamp_str:
+            try: 
                 from dateutil.parser import parse
                 timestamp = parse(timestamp_str)
             except:

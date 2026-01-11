@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from app.config import get_config
 from app.extensions import cors, db, migrate
@@ -60,25 +60,39 @@ def create_app(config_name=None):
 
 def setup_logging(app):
     """Setup application logging"""
+    from pathlib import Path
+    from app.utils.database_log_handler import DatabaseLogHandler
+
     log_level = getattr(logging, app.config['LOG_LEVEL'].upper(), logging.INFO)
     
     log_file = Path(app.config['LOG_FILE'])
     log_file.parent.mkdir(parents=True, exist_ok=True)
     
+    # File handler
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(log_level)
-    file_handler.setFormatter(logging.Formatter(
+    file_handler.setFormatter(logging. Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     ))
     
+    # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(log_level)
     console_handler.setFormatter(logging.Formatter(
         '%(levelname)s: %(message)s'
     ))
     
+    db_handler = DatabaseLogHandler(app=app, level=logging.WARNING)
+    
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(db_handler)
+    
     app.logger.addHandler(file_handler)
     app.logger.addHandler(console_handler)
+    app.logger.addHandler(db_handler)
     app.logger.setLevel(log_level)
 
 
@@ -87,12 +101,14 @@ def register_blueprints(app):
     
     # Import blueprints
     from app.routes import sensor_bp, control_bp, alert_bp, stats_bp
+    from app.routes.system_routes import system_bp
     
     # Register with /api prefix
     app.register_blueprint(sensor_bp, url_prefix='/api/sensors')
     app.register_blueprint(control_bp, url_prefix='/api/control')
     app.register_blueprint(alert_bp, url_prefix='/api/alerts')
     app.register_blueprint(stats_bp, url_prefix='/api/stats')
+    app.register_blueprint(system_bp, url_prefix='/api/system')
     
     # Root routes
     @app.route('/')
@@ -124,11 +140,32 @@ def register_blueprints(app):
 def register_error_handlers(app):
     """Register error handlers"""
     
+    @app.errorhandler(400)
+    def bad_request(error):
+        app.logger.warning(f"400 Bad Request: {error}")
+        return jsonify({'error': 'Bad request', 'message': str(error)}), 400
+    
     @app.errorhandler(404)
     def not_found(error):
+        app.logger.warning(f"404 Not Found:  {request.path}")
         return jsonify({'error': 'Not found', 'message': str(error)}), 404
+    
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        app.logger.warning(f"405 Method Not Allowed: {request.method} {request.path}")
+        return jsonify({'error': 'Method not allowed', 'message': str(error)}), 405
     
     @app.errorhandler(500)
     def internal_error(error):
-        app.logger.error(f"Internal error: {error}")
-        return jsonify({'error': 'Internal server error', 'message': str(error)}), 500
+        app.logger.error(f"500 Internal Server Error: {error}", exc_info=True)
+        return jsonify({'error': 'Internal server error', 'message':  str(error)}), 500
+    
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        """Catch-all for unhandled exceptions"""
+        app.logger.error(f"Unhandled exception: {error}", exc_info=True)
+        
+        return jsonify({
+            'error': 'Internal server error',
+            'message': 'An unexpected error occurred'
+        }), 500
