@@ -6,88 +6,72 @@ control_service = ControlService()
 
 
 @control_bp.route('/led', methods=['POST'])
-def control_led():
+def control_led_endpoint():
     """
     Control LED
     
-    Body:
+    Body: 
         {
-            "action": "on" | "off" | "toggle",
-            "brightness": 0-100 (optional, for "on")
+            "action":  "on" | "off" | "toggle",
+            "brightness": 100  (optional, 0-100)
         }
     """
     try:
-        data = request.get_json()
-        
-        if not data or 'action' not in data:
-            return jsonify({'error': 'Missing action'}), 400
-        
-        action = data['action']
+        data = request.get_json() or {}
+        action = data. get('action')
         brightness = data.get('brightness', 100)
         
-        # Send control command via PubNub
-        success = control_service.control_led(action, brightness)
+        if not action:
+            return jsonify({'error': 'Missing action parameter'}), 400
         
-        if success:
-            return jsonify({
-                'success': True,
-                'action': action,
-                'brightness':  brightness if action == 'on' else None
-            }), 200
+        result = control_service.control_led(action, brightness)
+        
+        if result. get('success'):
+            return jsonify(result), 200
         else:
-            return jsonify({'error': 'Failed to send command'}), 500
+            return jsonify(result), 400
             
-    except Exception as e: 
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 @control_bp.route('/buzzer', methods=['POST'])
-def control_buzzer():
+def control_buzzer_endpoint():
     """
     Control Buzzer
     
-    Body:
+    Body: 
         {
-            "action": "on" | "off" | "beep" | "alarm"
+            "action": "beep" | "alarm" | "on" | "off"
         }
     """
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+        action = data.get('action')
         
-        if not data or 'action' not in data:
-            return jsonify({'error': 'Missing action'}), 400
+        if not action: 
+            return jsonify({'error': 'Missing action parameter'}), 400
         
-        action = data['action']
+        result = control_service.control_buzzer(action)
         
-        # Send control command via PubNub
-        success = control_service.control_buzzer(action)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'action': action
-            }), 200
+        if result. get('success'):
+            return jsonify(result), 200
         else:
-            return jsonify({'error': 'Failed to send command'}), 500
+            return jsonify(result), 400
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 @control_bp.route('/status', methods=['GET'])
-def get_device_status():
+def get_status_endpoint():
     """
-    Get current device states
+    Get device status
     
-    Returns:
-        {
-            "led": {"state": "on", "brightness": 100},
-            "buzzer": {"state": "off"}
-        }
+    Returns current state of all devices
     """
     try:
         status = control_service.get_device_status()
         return jsonify(status), 200
-        
-    except Exception as e: 
-        return jsonify({'error':  str(e)}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

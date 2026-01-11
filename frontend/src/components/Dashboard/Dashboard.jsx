@@ -43,11 +43,12 @@ const Dashboard = () => {
     lastUpdate 
   } = useSensorData(true);
 
-  const { 
-    status: pubnubStatus, 
-    isConnected, 
-    sendControlCommand 
-  } = usePubNub([CHANNELS.SENSOR, CHANNELS.ALERT]);
+  const {
+    messages: pubnubMessages,
+    status: pubnubStatus,
+    isConnected,
+    sendControlCommand
+  } = usePubNub([CHANNELS.SENSOR, CHANNELS.CONTROL, CHANNELS.ALERT]);
 
   const { 
     deviceStates,
@@ -55,7 +56,7 @@ const Dashboard = () => {
     beep,
     alarm,
     loading: controlLoading 
-  } = useDeviceControl(sendControlCommand);
+  } = useDeviceControl(sendControlCommand, pubnubMessages);
 
   const { 
     unresolvedAlerts, 
