@@ -28,7 +28,7 @@ An intelligent environmental monitoring system that collects sensor data in real
 - 🚶 **Motion Detection** (PIR)
 
 ### Controlled Actuators:
-- 🔴🟢🔵 **RGB LEDs** (visual indicators)
+- 🟢 **Green LED** (visual indicators)
 - 🔊 **Buzzer** (audio alerts)
 
 ---
