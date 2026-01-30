@@ -39,7 +39,7 @@ sudo yum install -y htop curl wget nano
 # Create app directory
 echo "📁 Creating application directory..."
 sudo mkdir -p /opt/smart-home-iot
-sudo chown ec2-user: ec2-user /opt/smart-home-iot
+sudo chown ec2-user:ec2-user /opt/smart-home-iot
 
 # Configure firewall (Security Group should handle this, but just in case)
 echo "🔥 Configuring firewall..."
